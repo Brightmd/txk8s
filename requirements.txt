@@ -1,0 +1,6 @@
+kubernetes==3.0.0
+pytest==3.2.4
+pytest-cov==2.5.1
+pytest-flakes==2.0.0
+pytest-twisted==1.5
+Twisted==17.9.0
