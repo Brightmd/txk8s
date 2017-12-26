@@ -17,8 +17,8 @@ setup(
   classifiers = [],
   scripts = [],
   install_requires=cleandoc('''
-    kubernetes==3.0.0
-    Twisted==17.9.0
-    PyYAML==3.12
+    kubernetes>=3.0.0,<3.1.0
+    Twisted>=16.0.0,<18.0.0
+    PyYAML>=3.10,<4.0.0
     ''').split()
 )

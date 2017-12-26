@@ -7,6 +7,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+Library/
 .Python
 env/
 build/
@@ -36,6 +37,7 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
+html_tmp/
 htmlcov/
 .tox/
 .coverage
