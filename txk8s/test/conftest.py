@@ -43,5 +43,3 @@ def txclientInCluster(kubeConfig):
     pEnv = patch.dict(os.environ, {'KUBERNETES_PORT': 'tcp://hello'})
     with pEnv:
         return lib.TxKubernetesClient()
-
-
