@@ -1,6 +1,8 @@
 """
 Tests for osteoblaster's twisted kubernetes module.
 """
+import os
+
 import pytest
 
 from kubernetes import client
@@ -18,81 +20,98 @@ def txk8s(kubeConfig):
     Fixture to return an instance of the TxKubernetesClient
     class.
     """
-    with kubeConfig:
+    with kubeConfig, patch.dict(os.environ, {'KUBERNETES_PORT': ''}):
         return lib.TxKubernetesClient()
 
 
-class TestTxKubernetesClient(object):
+@pytest.fixture()
+def txk8sInCluster(kubeConfig):
     """
-    Testing all things TxKubernetesClient.
+    Fixture to return an instance of the TxKubernetesClient
+    class.
     """
-    def test_init(self, txk8s):
-        """
-        Do I initialize with the correct attributes?
-        """
-        txClientAttrs = ("client", "_apiClient", "coreV1")
-        assert all(attr in txk8s.__dict__ for attr in txClientAttrs)
+    with kubeConfig, patch.dict(os.environ, {'KUBERNETES_PORT': 'tcp://hello'}):
+        return lib.TxKubernetesClient()
 
-    def test_getAttr(self, txk8s):
-        """
-        Do I get attributes from the k8s python api client?
-        """
-        expected = "<class 'kubernetes.client.models.v1_namespace.V1Namespace'>"
-        assert str(txk8s.__getattr__("V1Namespace")) == expected
 
-    @pytest.inlineCallbacks
-    def test_callSuccess(self, kubeConfig):
-        """
-        Check that the `call` method does the following when successful:
-        - adds callback to the kwargs passed to the apiMethod
-        - calls the apiMethod it is passed
-        - does not call the errback handler when successful
-        - returns a deferred
-        """
-        def fakeReadNamespaceSecret(callback):
-            callback('happy')
+def test_initClient(txk8s):
+    """
+    Do I initialize with the correct attributes?
+    """
+    txClientAttrs = ("client", "_apiClient", "coreV1")
+    assert all(attr in txk8s.__dict__ for attr in txClientAttrs)
+
+
+def test_initClientIncluster(txk8sInCluster):
+    """
+    Do I initialize with the correct attributes?
+    """
+    txClientAttrs = ("client", "_apiClient", "coreV1")
+    assert all(attr in txk8s.__dict__ for attr in txClientAttrs)
+
+
+def test_getAttr(txk8s):
+    """
+    Do I get attributes from the k8s python api client?
+    """
+    expected = "<class 'kubernetes.client.models.v1_namespace.V1Namespace'>"
+    assert str(txk8s.__getattr__("V1Namespace")) == expected
+
+
+@pytest.inlineCallbacks
+def test_clientCallSuccess(kubeConfig):
+    """
+    Check that the `call` method does the following when successful:
+    - adds callback to the kwargs passed to the apiMethod
+    - calls the apiMethod it is passed
+    - does not call the errback handler when successful
+    - returns a deferred
+    """
+    def fakeReadNamespaceSecret(callback):
+        callback('happy')
+        return
+
+    pApiMethod = patch.object(client,
+        'CoreV1Api',
+        return_value=Mock(
+            read_namespaced_secret=fakeReadNamespaceSecret,
+        ),
+        autospec=True,
+    )
+    pErr = patch.object(log, 'err', autospec=True)
+
+    with pErr as mErr, pApiMethod as mApiMethod, kubeConfig:
+        txk8s = lib.TxKubernetesClient()
+        res = yield txk8s.call(txk8s.coreV1.read_namespaced_secret)
+        assert mApiMethod.call_count == 1
+        assert 'happy' == res
+        assert mErr.call_count == 0
+
+
+@pytest.inlineCallbacks
+def test_clientCallError(kubeConfig):
+    """
+    Check that the `call` method does the following when unsuccessful:
+    - when the timeout is triggered the errback is triggered which logs the message about the failure
+    """
+    pApiMethod = patch.object(client,
+        'CoreV1Api',
+        return_value=Mock(
+            read_namespaced_secret=Mock(),
+        ),
+        autospec=True,
+    )
+    pErr = patch.object(log, 'err', autospec=True)
+    pTimeout = patch.object(lib, 'TIMEOUT', 0)
+
+    with pErr as mErr, pApiMethod, kubeConfig, pTimeout:
+        txk8s = lib.TxKubernetesClient()
+        d = txk8s.call(txk8s.coreV1.read_namespaced_secret)
+        def _check(fail):
             return
-
-        pApiMethod = patch.object(client,
-            'CoreV1Api',
-            return_value=Mock(
-                read_namespaced_secret=fakeReadNamespaceSecret,
-            ),
-            autospec=True,
-        )
-        pErr = patch.object(log, 'err', autospec=True)
-
-        with pErr as mErr, pApiMethod as mApiMethod, kubeConfig:
-            txk8s = lib.TxKubernetesClient()
-            res = yield txk8s.call(txk8s.coreV1.read_namespaced_secret)
-            assert mApiMethod.call_count == 1
-            assert 'happy' == res
-            assert mErr.call_count == 0
-
-    @pytest.inlineCallbacks
-    def test_callError(self, kubeConfig):
-        """
-        Check that the `call` method does the following when unsuccessful:
-        - when the timeout is triggered the errback is triggered which logs the message about the failure
-        """
-        pApiMethod = patch.object(client,
-            'CoreV1Api',
-            return_value=Mock(
-                read_namespaced_secret=Mock(),
-            ),
-            autospec=True,
-        )
-        pErr = patch.object(log, 'err', autospec=True)
-        pTimeout = patch.object(lib, 'TIMEOUT', 0)
-
-        with pErr as mErr, pApiMethod, kubeConfig, pTimeout:
-            txk8s = lib.TxKubernetesClient()
-            d = txk8s.call(txk8s.coreV1.read_namespaced_secret)
-            def _check(fail):
-                return
-            d.addErrback(_check)
-            yield d
-            assert mErr.call_count == 1
+        d.addErrback(_check)
+        yield d
+        assert mErr.call_count == 1
 
 
 @pytest.inlineCallbacks
