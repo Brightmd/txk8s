@@ -36,7 +36,7 @@ task.react(main)
 
 ## For maintainers: How to build
 
-1. Increment `__version__` in `__version.py`.
+1. Increment `__version__` in `_version.py`.
 2. Update the Change Log below.
 3. Run the following:
 
@@ -46,6 +46,22 @@ twine upload dist/*<version>*
 ```
 
 ## Change Log
+
+### [0.0.2] - 2017-12-27
+#### Added
+- Example usage for secret creation/retrieval
+- Coverage report for tox tests
+- Test fixtures from previous internal project
+- Project code reviewed for first public release!
+#### Changed
+- Loosened requirements for dependencies in setup AND requirements
+- Fixed module self-dependency nonsense
+- Testing approach altered significantly
+
+
 ### [0.0.1] - 2017-12-21
 #### Changed
 - v1 yo
+
+[0.0.1]: https://github.com/Brightmd/txk8s/tree/0.0.1
+[0.0.2]: https://github.com/Brightmd/txk8s/compare/0.0.1...0.0.2
