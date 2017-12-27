@@ -1,6 +1,8 @@
 """
 Kubernetes Client done Twisted style.
 """
+from os import environ
+
 import yaml
 
 from kubernetes import client, config
@@ -21,7 +23,10 @@ class TxKubernetesClient(object):
         """
         Load the kube config and create an instance of the Kubernetes API client.
         """
-        config.load_incluster_config()
+        if environ.get('KUBERNETES_PORT'):
+            config.load_incluster_config()
+        else:
+            config.load_kube_config()
 
         self.client = client
         self._apiClient = client.ApiClient()

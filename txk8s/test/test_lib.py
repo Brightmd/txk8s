@@ -12,87 +12,84 @@ from twisted.python import log
 from txk8s import lib
 
 
-@pytest.fixture()
-def txk8s(kubeConfig):
+def test_initClient(txclient):
     """
-    Fixture to return an instance of the TxKubernetesClient
-    class.
+    Do I initialize with the correct attributes?
     """
-    with kubeConfig:
-        return lib.TxKubernetesClient()
+    for attr in ("client", "_apiClient", "coreV1"):
+        assert getattr(txclient, attr)
 
 
-class TestTxKubernetesClient(object):
+def test_initClientInCluster(txclientInCluster):
     """
-    Testing all things TxKubernetesClient.
+    Do I initialize with the correct attributes?
     """
-    def test_init(self, txk8s):
-        """
-        Do I initialize with the correct attributes?
-        """
-        txClientAttrs = ("client", "_apiClient", "coreV1")
-        assert all(attr in txk8s.__dict__ for attr in txClientAttrs)
+    for attr in ("client", "_apiClient", "coreV1"):
+        assert getattr(txclientInCluster, attr)
 
-    def test_getAttr(self, txk8s):
-        """
-        Do I get attributes from the k8s python api client?
-        """
-        expected = "<class 'kubernetes.client.models.v1_namespace.V1Namespace'>"
-        assert str(txk8s.__getattr__("V1Namespace")) == expected
 
-    @pytest.inlineCallbacks
-    def test_callSuccess(self, kubeConfig):
-        """
-        Check that the `call` method does the following when successful:
-        - adds callback to the kwargs passed to the apiMethod
-        - calls the apiMethod it is passed
-        - does not call the errback handler when successful
-        - returns a deferred
-        """
-        def fakeReadNamespaceSecret(callback):
-            callback('happy')
+def test_getAttr(txclient):
+    """
+    Do I get attributes from the k8s python api client?
+    """
+    expected = "<class 'kubernetes.client.models.v1_namespace.V1Namespace'>"
+    assert str(txclient.__getattr__("V1Namespace")) == expected
+
+
+@pytest.inlineCallbacks
+def test_clientCallSuccess(kubeConfig):
+    """
+    Check that the `call` method does the following when successful:
+    - adds callback to the kwargs passed to the apiMethod
+    - calls the apiMethod it is passed
+    - does not call the errback handler when successful
+    - returns a deferred
+    """
+    def fakeReadNamespaceSecret(callback):
+        callback('happy')
+        return
+
+    pApiMethod = patch.object(client,
+        'CoreV1Api',
+        return_value=Mock(
+            read_namespaced_secret=fakeReadNamespaceSecret,
+        ),
+        autospec=True,
+    )
+    pErr = patch.object(log, 'err', autospec=True)
+
+    with pErr as mErr, pApiMethod as mApiMethod:
+        txclient = lib.TxKubernetesClient()
+        res = yield txclient.call(txclient.coreV1.read_namespaced_secret)
+        assert mApiMethod.call_count == 1
+        assert 'happy' == res
+        assert mErr.call_count == 0
+
+
+@pytest.inlineCallbacks
+def test_clientCallError(kubeConfig):
+    """
+    Check that the `call` method does the following when unsuccessful:
+    - when the timeout is triggered the errback is triggered which logs the message about the failure
+    """
+    pApiMethod = patch.object(client,
+        'CoreV1Api',
+        return_value=Mock(
+            read_namespaced_secret=Mock(),
+        ),
+        autospec=True,
+    )
+    pErr = patch.object(log, 'err', autospec=True)
+    pTimeout = patch.object(lib, 'TIMEOUT', 0)
+
+    with pErr as mErr, pApiMethod, pTimeout:
+        txclient = lib.TxKubernetesClient()
+        d = txclient.call(txclient.coreV1.read_namespaced_secret)
+        def _check(fail):
             return
-
-        pApiMethod = patch.object(client,
-            'CoreV1Api',
-            return_value=Mock(
-                read_namespaced_secret=fakeReadNamespaceSecret,
-            ),
-            autospec=True,
-        )
-        pErr = patch.object(log, 'err', autospec=True)
-
-        with pErr as mErr, pApiMethod as mApiMethod, kubeConfig:
-            txk8s = lib.TxKubernetesClient()
-            res = yield txk8s.call(txk8s.coreV1.read_namespaced_secret)
-            assert mApiMethod.call_count == 1
-            assert 'happy' == res
-            assert mErr.call_count == 0
-
-    @pytest.inlineCallbacks
-    def test_callError(self, kubeConfig):
-        """
-        Check that the `call` method does the following when unsuccessful:
-        - when the timeout is triggered the errback is triggered which logs the message about the failure
-        """
-        pApiMethod = patch.object(client,
-            'CoreV1Api',
-            return_value=Mock(
-                read_namespaced_secret=Mock(),
-            ),
-            autospec=True,
-        )
-        pErr = patch.object(log, 'err', autospec=True)
-        pTimeout = patch.object(lib, 'TIMEOUT', 0)
-
-        with pErr as mErr, pApiMethod, kubeConfig, pTimeout:
-            txk8s = lib.TxKubernetesClient()
-            d = txk8s.call(txk8s.coreV1.read_namespaced_secret)
-            def _check(fail):
-                return
-            d.addErrback(_check)
-            yield d
-            assert mErr.call_count == 1
+        d.addErrback(_check)
+        yield d
+        assert mErr.call_count == 1
 
 
 @pytest.inlineCallbacks
@@ -106,7 +103,7 @@ def test_createPVC(kubeConfig):
     pCall = patch.object(lib.TxKubernetesClient, 'call')
     pPVC = patch.object(client, 'V1PersistentVolumeClaim')
     pApiMethod = patch.object(client,'CoreV1Api')
-    with kubeConfig, pPVC as mPVC, pApiMethod, pCall as mCall:
+    with pPVC as mPVC, pApiMethod, pCall as mCall:
         yield lib.createPVC('a', meta, spec, namespace)
         mPVC.assert_called_once_with(api_version='v1', kind='PersistentVolumeClaim', metadata=meta, spec=spec)
         mCall.assert_called_once()
@@ -122,7 +119,7 @@ def test_createStorageClass(kubeConfig):
     pCall = patch.object(lib.TxKubernetesClient, 'call')
     pStorage = patch.object(client, 'V1beta1StorageClass')
     pApiMethod = patch.object(client,'StorageV1beta1Api')
-    with kubeConfig, pStorage as mStorage, pApiMethod, pCall as mCall:
+    with pStorage as mStorage, pApiMethod, pCall as mCall:
         yield lib.createStorageClass('a', meta, provisioner)
         mStorage.assert_called_once_with(api_version='storage.k8s.io/v1beta1', kind='StorageClass', metadata=meta, provisioner=provisioner)
         mCall.assert_called_once()
@@ -142,7 +139,7 @@ def test_createDeploymentFromFile(kubeConfig):
         ),
         autospec=True,
     )
-    with kubeConfig, pApiMethod as mApiMethod, pCall as mCall, pOpen:
+    with pApiMethod as mApiMethod, pCall as mCall, pOpen:
         yield lib.createDeploymentFromFile('a', '/path')
         mApiMethod.assert_called_once()
         mCall.assert_called_once_with('a', body='data', namespace='default')
@@ -165,7 +162,7 @@ def test_createConfigMap(kubeConfig):
         ),
         autospec=True,
     )
-    with kubeConfig, pApiMethod, pPVC, pCall as mCall:
+    with pApiMethod, pPVC, pCall as mCall:
         yield lib.createConfigMap(meta, data, namespace)
         mCall.assert_called_once_with('a', 'grn-se-com', 'thing')
 
@@ -186,7 +183,7 @@ def test_createService(kubeConfig):
         ),
         autospec=True,
     )
-    with kubeConfig, pApiMethod as mApiMethod, pCall as mCall, pOpen:
+    with pApiMethod as mApiMethod, pCall as mCall, pOpen:
         yield lib.createService('/path', namespace)
         mApiMethod.assert_called_once()
         mCall.assert_called_once_with('a', namespace, fileData)
@@ -208,7 +205,7 @@ def test_createServiceAccount(kubeConfig):
         ),
         autospec=True,
     )
-    with kubeConfig, pApiMethod as mApiMethod, pCall as mCall, pOpen:
+    with pApiMethod as mApiMethod, pCall as mCall, pOpen:
         yield lib.createServiceAccount('a', '/path', namespace)
         mApiMethod.assert_called_once()
         mCall.assert_called_once_with('a', namespace, fileData)
@@ -229,7 +226,7 @@ def test_createClusterRole(kubeConfig):
         ),
         autospec=True,
     )
-    with kubeConfig, pApiMethod as mApiMethod, pCall as mCall, pOpen:
+    with pApiMethod as mApiMethod, pCall as mCall, pOpen:
         yield lib.createClusterRole('a', '/path')
         mApiMethod.assert_called_once()
         mCall.assert_called_once_with('a', fileData)
@@ -250,7 +247,7 @@ def test_createClusterRoleBind(kubeConfig):
         ),
         autospec=True,
     )
-    with kubeConfig, pApiMethod as mApiMethod, pCall as mCall, pOpen:
+    with pApiMethod as mApiMethod, pCall as mCall, pOpen:
         yield lib.createClusterRoleBind('a', '/path')
         mApiMethod.assert_called_once()
         mCall.assert_called_once_with('a', fileData)
@@ -272,7 +269,7 @@ def test_createIngress(kubeConfig):
         ),
         autospec=True,
     )
-    with kubeConfig, pApiMethod as mApiMethod, pCall as mCall, pOpen:
+    with pApiMethod as mApiMethod, pCall as mCall, pOpen:
         yield lib.createIngress('a', '/path', namespace)
         mApiMethod.assert_called_once()
         mCall.assert_called_once_with('a', namespace, fileData)
@@ -283,8 +280,7 @@ def test_createEnvVar(kubeConfig):
     Do I create a environment variable kubernetes resource that references
     a value in a configmap?
     """
-    with kubeConfig:
-        actual = str(lib.createEnvVar('fun!', 'cmName', 'cmKey'))
-        assert "'key': 'cmKey'" in actual
-        assert "'name': 'cmName'" in actual
-        assert "'name': 'fun!'" in actual
+    actual = str(lib.createEnvVar('fun!', 'cmName', 'cmKey'))
+    assert "'key': 'cmKey'" in actual
+    assert "'name': 'cmName'" in actual
+    assert "'name': 'fun!'" in actual
