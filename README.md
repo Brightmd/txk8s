@@ -47,6 +47,11 @@ twine upload dist/*<version>*
 
 ## Change Log
 
+### [0.1.0] - 2017-12-27
+#### Changed
+- Version incremented to 0.1.0 and is no longer pre-alpha!!
+- Fixed version import in init
+
 ### [0.0.2] - 2017-12-27
 #### Added
 - Example usage for secret creation/retrieval
@@ -58,10 +63,10 @@ twine upload dist/*<version>*
 - Fixed module self-dependency nonsense
 - Testing approach altered significantly
 
-
 ### [0.0.1] - 2017-12-21
 #### Changed
 - v1 yo
 
 [0.0.1]: https://github.com/Brightmd/txk8s/tree/0.0.1
 [0.0.2]: https://github.com/Brightmd/txk8s/compare/0.0.1...0.0.2
+[0.1.0]: https://github.com/Brightmd/txk8s/compare/0.0.2...0.1.0

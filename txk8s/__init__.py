@@ -2,7 +2,7 @@
 Twisted implementation for Kubernetes
 """
 
-from txk8s import _version
+from txk8s._version import __version__
 from txk8s.lib import (TxKubernetesClient,
                   createPVC,
                   createStorageClass,
@@ -15,7 +15,7 @@ from txk8s.lib import (TxKubernetesClient,
                   createIngress,
                   createEnvVar,)
 
-(_version,
+(__version__,
  TxKubernetesClient,
  createPVC,
  createStorageClass,
