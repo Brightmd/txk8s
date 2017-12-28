@@ -47,6 +47,12 @@ twine upload dist/*<version>*
 
 ## Change Log
 
+### [0.1.1] - 2017-12-28
+#### Added
+- doc/ dir and first doc on module!
+#### Changed
+- Removed a response parameter to many funcs & converted to lambda function
+
 ### [0.1.0] - 2017-12-27
 #### Changed
 - Version incremented to 0.1.0 and is no longer pre-alpha!!
