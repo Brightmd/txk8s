@@ -62,7 +62,7 @@ class TxKubernetesClient(object):
         return d
 
 
-def createPVC(res, metadata, spec, namespace):
+def createPVC(metadata, spec, namespace):
     """
     Create a Persistent Volume Claim kubernetes resource in a namespace.
     """
@@ -81,7 +81,7 @@ def createPVC(res, metadata, spec, namespace):
     return d
     
 
-def createStorageClass(res, metadata, provisioner):
+def createStorageClass(metadata, provisioner):
     """
     Create a Storage Class kubernetes resource.
     """
@@ -101,7 +101,7 @@ def createStorageClass(res, metadata, provisioner):
     return d
 
 
-def createDeploymentFromFile(res, filePath, namespace='default'):
+def createDeploymentFromFile(filePath, namespace='default'):
     """
     Create a Deployment kubernetes resource from a yaml manifest file.
     """
@@ -152,7 +152,7 @@ def createService(filePath, namespace):
         return d
 
 
-def createServiceAccount(res, filePath, namespace):
+def createServiceAccount(filePath, namespace):
     """
     Create a Service Account kubernetes resource from a yaml manifest file.
     """
@@ -168,7 +168,7 @@ def createServiceAccount(res, filePath, namespace):
         return d
 
 
-def createClusterRole(res, filePath):
+def createClusterRole(filePath):
     """
     Create a Cluster Role kubernetes resource from a yaml manifest file.
     """
@@ -183,7 +183,7 @@ def createClusterRole(res, filePath):
         return d
 
 
-def createClusterRoleBind(res, filePath):
+def createClusterRoleBind(filePath):
     """
     Create a Cluster Role Binding kubernetes resource from a yaml manifest file.
     """
@@ -198,7 +198,7 @@ def createClusterRoleBind(res, filePath):
         return d
 
 
-def createIngress(res, filePath, namespace):
+def createIngress(filePath, namespace):
     """
     Create a Ingress kubernetes resource from a yaml manifest file
     """
