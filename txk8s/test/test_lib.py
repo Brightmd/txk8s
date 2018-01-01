@@ -104,7 +104,7 @@ def test_createPVC(kubeConfig):
     pPVC = patch.object(client, 'V1PersistentVolumeClaim')
     pApiMethod = patch.object(client,'CoreV1Api')
     with pPVC as mPVC, pApiMethod, pCall as mCall:
-        yield lib.createPVC('a', meta, spec, namespace)
+        yield lib.createPVC(meta, spec, namespace)
         mPVC.assert_called_once_with(api_version='v1', kind='PersistentVolumeClaim', metadata=meta, spec=spec)
         mCall.assert_called_once()
 
@@ -120,7 +120,7 @@ def test_createStorageClass(kubeConfig):
     pStorage = patch.object(client, 'V1beta1StorageClass')
     pApiMethod = patch.object(client,'StorageV1beta1Api')
     with pStorage as mStorage, pApiMethod, pCall as mCall:
-        yield lib.createStorageClass('a', meta, provisioner)
+        yield lib.createStorageClass(meta, provisioner)
         mStorage.assert_called_once_with(api_version='storage.k8s.io/v1beta1', kind='StorageClass', metadata=meta, provisioner=provisioner)
         mCall.assert_called_once()
 
@@ -140,7 +140,7 @@ def test_createDeploymentFromFile(kubeConfig):
         autospec=True,
     )
     with pApiMethod as mApiMethod, pCall as mCall, pOpen:
-        yield lib.createDeploymentFromFile('a', '/path')
+        yield lib.createDeploymentFromFile('/path')
         mApiMethod.assert_called_once()
         mCall.assert_called_once_with('a', body='data', namespace='default')
 
@@ -206,7 +206,7 @@ def test_createServiceAccount(kubeConfig):
         autospec=True,
     )
     with pApiMethod as mApiMethod, pCall as mCall, pOpen:
-        yield lib.createServiceAccount('a', '/path', namespace)
+        yield lib.createServiceAccount('/path', namespace)
         mApiMethod.assert_called_once()
         mCall.assert_called_once_with('a', namespace, fileData)
 
@@ -227,7 +227,7 @@ def test_createClusterRole(kubeConfig):
         autospec=True,
     )
     with pApiMethod as mApiMethod, pCall as mCall, pOpen:
-        yield lib.createClusterRole('a', '/path')
+        yield lib.createClusterRole('/path')
         mApiMethod.assert_called_once()
         mCall.assert_called_once_with('a', fileData)
 
@@ -248,7 +248,7 @@ def test_createClusterRoleBind(kubeConfig):
         autospec=True,
     )
     with pApiMethod as mApiMethod, pCall as mCall, pOpen:
-        yield lib.createClusterRoleBind('a', '/path')
+        yield lib.createClusterRoleBind('/path')
         mApiMethod.assert_called_once()
         mCall.assert_called_once_with('a', fileData)
 
@@ -270,7 +270,7 @@ def test_createIngress(kubeConfig):
         autospec=True,
     )
     with pApiMethod as mApiMethod, pCall as mCall, pOpen:
-        yield lib.createIngress('a', '/path', namespace)
+        yield lib.createIngress('/path', namespace)
         mApiMethod.assert_called_once()
         mCall.assert_called_once_with('a', namespace, fileData)
 
