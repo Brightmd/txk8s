@@ -34,6 +34,8 @@ def main(reactor):
 task.react(main)
 ```
 
+## Please see top-level doc/ dir for more information
+
 ## For maintainers: How to build
 
 1. Increment `__version__` in `_version.py`.
@@ -46,6 +48,10 @@ twine upload dist/*<version>*
 ```
 
 ## Change Log
+
+### [0.1.2] - 2018-01-04
+#### Changed
+- tests fixed from lambdification
 
 ### [0.1.1] - 2017-12-28
 #### Added
@@ -76,3 +82,5 @@ twine upload dist/*<version>*
 [0.0.1]: https://github.com/Brightmd/txk8s/tree/0.0.1
 [0.0.2]: https://github.com/Brightmd/txk8s/compare/0.0.1...0.0.2
 [0.1.0]: https://github.com/Brightmd/txk8s/compare/0.0.2...0.1.0
+[0.1.1]: https://github.com/Brightmd/txk8s/compare/0.1.0...0.1.1
+[0.1.2]: https://github.com/Brightmd/txk8s/compare/0.1.1...0.1.2
