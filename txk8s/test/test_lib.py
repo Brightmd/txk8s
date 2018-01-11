@@ -7,8 +7,6 @@ from kubernetes import client
 
 from mock import Mock, mock_open, patch
 
-from twisted.python import log
-
 from txk8s import lib
 
 
@@ -56,14 +54,12 @@ def test_clientCallSuccess(kubeConfig):
         ),
         autospec=True,
     )
-    pErr = patch.object(log, 'err', autospec=True)
 
-    with pErr as mErr, pApiMethod as mApiMethod:
+    with pApiMethod as mApiMethod:
         txclient = lib.TxKubernetesClient()
         res = yield txclient.call(txclient.coreV1.read_namespaced_secret)
         assert mApiMethod.call_count == 1
         assert 'happy' == res
-        assert mErr.call_count == 0
 
 
 @pytest.inlineCallbacks
@@ -79,17 +75,15 @@ def test_clientCallError(kubeConfig):
         ),
         autospec=True,
     )
-    pErr = patch.object(log, 'err', autospec=True)
     pTimeout = patch.object(lib, 'TIMEOUT', 0)
 
-    with pErr as mErr, pApiMethod, pTimeout:
+    with pApiMethod, pTimeout:
         txclient = lib.TxKubernetesClient()
         d = txclient.call(txclient.coreV1.read_namespaced_secret)
         def _check(fail):
             return
         d.addErrback(_check)
         yield d
-        assert mErr.call_count == 1
 
 
 @pytest.inlineCallbacks

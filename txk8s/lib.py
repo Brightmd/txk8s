@@ -8,7 +8,6 @@ import yaml
 from kubernetes import client, config
 
 from twisted.internet import defer, reactor
-from twisted.python import log
 
 
 TIMEOUT = 1 # seconds
@@ -44,13 +43,6 @@ class TxKubernetesClient(object):
         """
         Make an asynchronous request to k8s API server with twisted deferreds.
         """
-        def _handleErr(fail):
-            """
-            Log the error and return the failure.
-            """
-            log.err('Error in: %s. Failure: %s.' % (apiMethod, fail))
-            return fail
-
         d = defer.Deferred()
 
         # k8s python client v3 supports passing in a callback,
@@ -58,7 +50,6 @@ class TxKubernetesClient(object):
         kwargs['callback'] = d.callback
         apiMethod(*args, **kwargs)
         d.addTimeout(TIMEOUT, reactor)
-        d.addErrback(_handleErr)
         return d
 
 
