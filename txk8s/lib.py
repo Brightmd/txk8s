@@ -13,6 +13,19 @@ from twisted.internet import defer, reactor
 TIMEOUT = 1 # seconds
 
 
+class TxKubernetesError(Exception):
+    """
+    Something went wrong in the kubernetes API
+    """
+    def __init__(self, method, e):
+        Exception.__init__(self, 'Error in: %s. %r.' % (method, e))
+        self.method = method
+        self.wrappedException = e
+
+    def __getattr__(self, attr):
+        return getattr(self.wrappedException, attr)
+
+
 class TxKubernetesClient(object):
     """
     Wrapper for Kubernetes Python Client to make requests to the Kubernetes
@@ -43,6 +56,12 @@ class TxKubernetesClient(object):
         """
         Make an asynchronous request to k8s API server with twisted deferreds.
         """
+        def _handleErr(fail):
+            """
+            Raise an exception that tells us where the error occured
+            """
+            raise TxKubernetesError(apiMethod, fail.value)
+
         d = defer.Deferred()
 
         # k8s python client v3 supports passing in a callback,
@@ -50,6 +69,7 @@ class TxKubernetesClient(object):
         kwargs['callback'] = d.callback
         apiMethod(*args, **kwargs)
         d.addTimeout(TIMEOUT, reactor)
+        d.addErrback(_handleErr)
         return d
 
 
