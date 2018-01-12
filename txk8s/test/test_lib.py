@@ -81,7 +81,7 @@ def test_clientCallError(kubeConfig):
         txclient = lib.TxKubernetesClient()
         d = txclient.call(txclient.coreV1.read_namespaced_secret)
         def _check(fail):
-            return
+            assert type(fail.value) == lib.TxKubernetesError
         d.addErrback(_check)
         yield d
 

@@ -22,9 +22,6 @@ class TxKubernetesError(Exception):
         self.method = method
         self.wrappedException = e
 
-    def __getattr__(self, attr):
-        return getattr(self.wrappedException, attr)
-
 
 class TxKubernetesClient(object):
     """
