@@ -49,7 +49,7 @@ twine upload dist/*<version>*
 
 ## Change Log
 
-### [0.1.3] - 2018-01-15
+### [0.1.4] - 2018-01-15
 #### Fixed
 - No longer output errors to stdout (#7)
 
@@ -80,7 +80,7 @@ twine upload dist/*<version>*
 - Fixed module self-dependency nonsense
 - Testing approach altered significantly
 
-[0.1.3]: https://github.com/Brightmd/txk8s/compare/0.1.2...0.1.3
+[0.1.3]: https://github.com/Brightmd/txk8s/compare/0.1.2...0.1.4
 [0.1.2]: https://github.com/Brightmd/txk8s/compare/0.1.1...0.1.2
 [0.1.1]: https://github.com/Brightmd/txk8s/compare/0.1.0...0.1.1
 [0.1.0]: https://github.com/Brightmd/txk8s/compare/0.0.2...0.1.0
