@@ -49,6 +49,10 @@ twine upload dist/*<version>*
 
 ## Change Log
 
+### [0.1.3] - 2018-01-15
+#### Fixed
+- No longer output errors to stdout (#7)
+
 ### [0.1.2] - 2018-01-04
 #### Changed
 - tests fixed from lambdification
@@ -64,8 +68,9 @@ twine upload dist/*<version>*
 - Version incremented to 0.1.0 and is no longer pre-alpha!!
 - Fixed version import in init
 
-### [0.0.2] - 2017-12-27
+### [Older] - 2017-12-27
 #### Added
+- v1
 - Example usage for secret creation/retrieval
 - Coverage report for tox tests
 - Test fixtures from previous internal project
@@ -75,12 +80,8 @@ twine upload dist/*<version>*
 - Fixed module self-dependency nonsense
 - Testing approach altered significantly
 
-### [0.0.1] - 2017-12-21
-#### Changed
-- v1 yo
-
-[0.0.1]: https://github.com/Brightmd/txk8s/tree/0.0.1
-[0.0.2]: https://github.com/Brightmd/txk8s/compare/0.0.1...0.0.2
-[0.1.0]: https://github.com/Brightmd/txk8s/compare/0.0.2...0.1.0
-[0.1.1]: https://github.com/Brightmd/txk8s/compare/0.1.0...0.1.1
+[0.1.3]: https://github.com/Brightmd/txk8s/compare/0.1.2...0.1.3
 [0.1.2]: https://github.com/Brightmd/txk8s/compare/0.1.1...0.1.2
+[0.1.1]: https://github.com/Brightmd/txk8s/compare/0.1.0...0.1.1
+[0.1.0]: https://github.com/Brightmd/txk8s/compare/0.0.2...0.1.0
+[Older]: https://github.com/Brightmd/txk8s/tree/0.0.2
