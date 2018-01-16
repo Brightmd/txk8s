@@ -8,10 +8,19 @@ import yaml
 from kubernetes import client, config
 
 from twisted.internet import defer, reactor
-from twisted.python import log
 
 
 TIMEOUT = 1 # seconds
+
+
+class TxKubernetesError(Exception):
+    """
+    Something went wrong in the kubernetes API
+    """
+    def __init__(self, method, e):
+        Exception.__init__(self, 'Error in: %s. %r.' % (method, e))
+        self.method = method
+        self.wrappedException = e
 
 
 class TxKubernetesClient(object):
@@ -46,10 +55,9 @@ class TxKubernetesClient(object):
         """
         def _handleErr(fail):
             """
-            Log the error and return the failure.
+            Raise an exception that tells us where the error occured
             """
-            log.err('Error in: %s. Failure: %s.' % (apiMethod, fail))
-            return fail
+            raise TxKubernetesError(apiMethod, fail.value)
 
         d = defer.Deferred()
 
