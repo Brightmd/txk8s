@@ -42,6 +42,7 @@ class TxKubernetesClient(object):
         self.coreV1 = client.CoreV1Api(self._apiClient)
         self.rbacV1Beta1 = client.RbacAuthorizationV1beta1Api(self._apiClient)
         self.extV1Beta1 = client.ExtensionsV1beta1Api(self._apiClient)
+        self.appsV1 = client.AppsV1beta1Api()
 
     def __getattr__(self, attr):
         """
@@ -68,6 +69,117 @@ class TxKubernetesClient(object):
         d.addTimeout(TIMEOUT, reactor)
         d.addErrback(_handleErr)
         return d
+
+
+def deleteService(name, namespace):
+    """
+    Delete a k8s service resource in a given namespace.
+    """
+    txk8s = TxKubernetesClient()
+
+    d = txk8s.call(txk8s.coreV1.delete_namespaced_service,
+        name=name,
+        namespace=namespace,
+    )
+    return d
+
+
+def deleteServiceAcct(name, namespace):
+    """
+    Delete a k8s service account resource in a given namespace.
+    """
+    txk8s = TxKubernetesClient()
+
+    d = txk8s.call(txk8s.coreV1.delete_namespaced_service_account,
+        name=name,
+        namespace=namespace,
+        body=txk8s.V1DeleteOptions(),
+    )
+    return d
+
+
+def deleteDeploy(name, namespace):
+    """
+    Delete a k8s deployment resource in a given namespace.
+    """
+    txk8s = TxKubernetesClient()
+
+    d = txk8s.call(txk8s.extV1Beta1.delete_namespaced_deployment,
+        name=name,
+        namespace=namespace,
+        body=txk8s.V1DeleteOptions(
+            # delete children as well, i.e. pods and rs
+            propagation_policy='Foreground'
+        ),
+    )
+    return d
+
+
+def deleteIngress(name, namespace):
+    """
+    Delete a k8s ingress resource in a given namespace.
+    """
+    txk8s = TxKubernetesClient()
+
+    d = txk8s.call(txk8s.extV1Beta1.delete_namespaced_ingress,
+        name=name,
+        namespace=namespace,
+        body=txk8s.V1DeleteOptions(),
+    )
+    return d
+
+
+def deletePVC(name, namespace):
+    """
+    Delete a k8s persistent volume claim resource in a given namespace.
+    """
+    txk8s = TxKubernetesClient()
+
+    d = txk8s.call(txk8s.coreV1.delete_namespaced_persistent_volume_claim,
+        name=name,
+        namespace=namespace,
+        body=txk8s.V1DeleteOptions(
+            # delete any children as well
+            propagation_policy='Foreground'
+        ),
+    )
+    return d
+
+
+def deleteConfigMap(name, namespace):
+    """
+    Delete a configmap kubernetes resources in a namespace.
+    """
+    txk8s = TxKubernetesClient()
+
+    d = txk8s.call(txk8s.coreV1.delete_namespaced_config_map,
+        name=name,
+        namespace=namespace,
+        body=txk8s.V1DeleteOptions(),
+    )
+    return d
+
+
+def deleteNamespace(namespace):
+    """
+    Delete the given namespace.
+    """
+    txk8s = TxKubernetesClient()
+
+    d = txk8s.call(txk8s.coreV1.delete_namespace,
+        name=namespace,
+        body=txk8s.V1DeleteOptions(),
+    )
+    return d
+
+
+def listDeployments(namespace):
+    """
+    Get a list of all the deployments in a given namespace.
+    """
+    txk8s = TxKubernetesClient()
+    deploys = txk8s.appsV1.list_namespaced_deployment(namespace)
+    return deploys
 
 
 def createPVC(metadata, spec, namespace):
@@ -118,6 +230,7 @@ def createDeploymentFromFile(filePath, namespace='default'):
     with open(filePath, 'r') as file:
         deployment = yaml.load(file)
 
+        # create a deployment in a namespace
         d = txk8s.call(txk8s.extV1Beta1.create_namespaced_deployment,
             body=deployment,
             namespace=namespace,
