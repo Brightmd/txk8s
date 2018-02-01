@@ -87,6 +87,166 @@ def test_clientCallError(kubeConfig):
 
 
 @pytest.inlineCallbacks
+def test_deleteService(kubeConfig):
+    """
+    Do I delete a service kubernetes resource in a namespace?
+    """
+    namespace = 'test-se-com'
+    pCall = patch.object(lib.TxKubernetesClient, 'call')
+    pApiMethod = patch.object(lib.client,
+        'CoreV1Api',
+        return_value=Mock(
+            delete_namespaced_service='a',
+        ),
+        autospec=True,
+    )
+    with pApiMethod as mApiMethod, pCall as mCall:
+        yield lib.deleteService('name', namespace)
+        mApiMethod.assert_called_once()
+        mCall.assert_called_once()
+
+
+@pytest.inlineCallbacks
+def test_deleteSvcAcct(kubeConfig):
+    """
+    Do I delete a service account kubernetes resource in a namespace?
+    """
+    namespace = 'test-se-com'
+    pCall = patch.object(lib.TxKubernetesClient, 'call')
+    pApiMethod = patch.object(lib.client,
+        'CoreV1Api',
+        return_value=Mock(
+            delete_namespaced_service_account='a',
+        ),
+        autospec=True,
+    )
+    with pApiMethod as mApiMethod, pCall as mCall:
+        yield lib.deleteServiceAcct('name', namespace)
+        mApiMethod.assert_called_once()
+        mCall.assert_called_once()
+
+
+@pytest.inlineCallbacks
+def test_deleteDeploy(kubeConfig):
+    """
+    Do I delete a deployment kubernetes resource in a namespace?
+    """
+    namespace = 'test-se-com'
+    pCall = patch.object(lib.TxKubernetesClient, 'call')
+    pApiMethod = patch.object(lib.client,
+        'ExtensionsV1beta1Api',
+        return_value=Mock(
+            delete_namespaced_deployment='',
+        ),
+        autospec=True,
+    )
+    with pApiMethod as mApiMethod, pCall as mCall:
+        yield lib.deleteDeploy('name', namespace)
+        mApiMethod.assert_called_once()
+        mCall.assert_called_once()
+
+
+@pytest.inlineCallbacks
+def test_deleteIngress(kubeConfig):
+    """
+    Do I delete a ingress kubernetes resource in a namespace?
+    """
+    namespace = 'test-se-com'
+    pCall = patch.object(lib.TxKubernetesClient, 'call')
+    pApiMethod = patch.object(lib.client,
+        'ExtensionsV1beta1Api',
+        return_value=Mock(
+            delete_namespaced_ingress='',
+        ),
+        autospec=True,
+    )
+    with pApiMethod as mApiMethod, pCall as mCall:
+        yield lib.deleteIngress('name', namespace)
+        mApiMethod.assert_called_once()
+        mCall.assert_called_once()
+
+
+@pytest.inlineCallbacks
+def test_deletePVC(kubeConfig):
+    """
+    Do I delete a persistent volume claim kubernetes resource in a namespace?
+    """
+    namespace = 'test-se-com'
+    pCall = patch.object(lib.TxKubernetesClient, 'call')
+    pApiMethod = patch.object(lib.client,
+        'CoreV1Api',
+        return_value=Mock(
+            delete_namespaced_persistent_volume_claim='',
+        ),
+        autospec=True,
+    )
+    with pApiMethod as mApiMethod, pCall as mCall:
+        yield lib.deletePVC('name', namespace)
+        mApiMethod.assert_called_once()
+        mCall.assert_called_once()
+
+
+@pytest.inlineCallbacks
+def test_deleteCM(kubeConfig):
+    """
+    Do I delete a config map kubernetes resource in a namespace?
+    """
+    namespace = 'test-se-com'
+    pCall = patch.object(lib.TxKubernetesClient, 'call')
+    pApiMethod = patch.object(lib.client,
+        'CoreV1Api',
+        return_value=Mock(
+            delete_namespaced_config_map='',
+        ),
+        autospec=True,
+    )
+    with pApiMethod as mApiMethod, pCall as mCall:
+
+        yield lib.deleteConfigMap('name', namespace)
+        mApiMethod.assert_called_once()
+        mCall.assert_called_once()
+
+
+@pytest.inlineCallbacks
+def test_deleteNs(kubeConfig):
+    """
+    Do I delete a namespace kubernetes resource in a namespace?
+    """
+    namespace = 'test-se-com'
+    pCall = patch.object(lib.TxKubernetesClient, 'call')
+    pApiMethod = patch.object(lib.client,
+        'CoreV1Api',
+        return_value=Mock(
+            delete_namespace='',
+        ),
+        autospec=True,
+    )
+    with pApiMethod as mApiMethod, pCall as mCall:
+
+        yield lib.deleteNamespace(namespace)
+        mApiMethod.assert_called_once()
+        mCall.assert_called_once()
+
+
+@pytest.inlineCallbacks
+def test_listDeployments(kubeConfig):
+    """
+    Do I list all the deployments in a namespace?
+    """
+    namespace = 'test-se-com'
+    pApiMethod = patch.object(lib.client,
+        'AppsV1beta1Api',
+        return_value=Mock(
+            list_namespaced_deployment=Mock(),
+        ),
+        autospec=True,
+    )
+    with pApiMethod as mApiMethod:
+        yield lib.listDeployments(namespace)
+        mApiMethod.assert_called_once()
+
+
+@pytest.inlineCallbacks
 def test_createPVC(kubeConfig):
     """
     Do I create a Persistent Volume Claim kubernetes resource in a namespace?
