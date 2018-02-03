@@ -49,6 +49,12 @@ twine upload dist/*<version>*
 
 ## Change Log
 
+### [0.1.5] - 2018-02-02
+#### Added
+- Deletion methods for Python K8S API
+#### Changed
+- Cleaned up some old instances of `txk8s` in the code to something NOT-the package name
+
 ### [0.1.4] - 2018-01-15
 #### Fixed
 - No longer output errors to stdout (#7)
