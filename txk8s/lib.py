@@ -42,6 +42,8 @@ class TxKubernetesClient(object):
         self.coreV1 = client.CoreV1Api(self._apiClient)
         self.rbacV1Beta1 = client.RbacAuthorizationV1beta1Api(self._apiClient)
         self.extV1Beta1 = client.ExtensionsV1beta1Api(self._apiClient)
+        self.appsV1 = client.AppsV1beta1Api()
+        self.StorageV1beta1Api = client.StorageV1beta1Api()
 
     def __getattr__(self, attr):
         """
@@ -70,19 +72,130 @@ class TxKubernetesClient(object):
         return d
 
 
+def deleteService(name, namespace):
+    """
+    Delete a k8s service resource in a given namespace.
+    """
+    txClient = TxKubernetesClient()
+
+    d = txClient.call(txClient.coreV1.delete_namespaced_service,
+        name=name,
+        namespace=namespace,
+    )
+    return d
+
+
+def deleteServiceAcct(name, namespace):
+    """
+    Delete a k8s service account resource in a given namespace.
+    """
+    txClient = TxKubernetesClient()
+
+    d = txClient.call(txClient.coreV1.delete_namespaced_service_account,
+        name=name,
+        namespace=namespace,
+        body=txClient.V1DeleteOptions(),
+    )
+    return d
+
+
+def deleteDeploy(name, namespace):
+    """
+    Delete a k8s deployment resource in a given namespace.
+    """
+    txClient = TxKubernetesClient()
+
+    d = txClient.call(txClient.extV1Beta1.delete_namespaced_deployment,
+        name=name,
+        namespace=namespace,
+        body=txClient.V1DeleteOptions(
+            # delete children as well, i.e. pods and rs
+            propagation_policy='Foreground'
+        ),
+    )
+    return d
+
+
+def deleteIngress(name, namespace):
+    """
+    Delete a k8s ingress resource in a given namespace.
+    """
+    txClient = TxKubernetesClient()
+
+    d = txClient.call(txClient.extV1Beta1.delete_namespaced_ingress,
+        name=name,
+        namespace=namespace,
+        body=txClient.V1DeleteOptions(),
+    )
+    return d
+
+
+def deletePVC(name, namespace):
+    """
+    Delete a k8s persistent volume claim resource in a given namespace.
+    """
+    txClient = TxKubernetesClient()
+
+    d = txClient.call(txClient.coreV1.delete_namespaced_persistent_volume_claim,
+        name=name,
+        namespace=namespace,
+        body=txClient.V1DeleteOptions(
+            # delete any children as well
+            propagation_policy='Foreground'
+        ),
+    )
+    return d
+
+
+def deleteConfigMap(name, namespace):
+    """
+    Delete a configmap kubernetes resources in a namespace.
+    """
+    txClient = TxKubernetesClient()
+
+    d = txClient.call(txClient.coreV1.delete_namespaced_config_map,
+        name=name,
+        namespace=namespace,
+        body=txClient.V1DeleteOptions(),
+    )
+    return d
+
+
+def deleteNamespace(namespace):
+    """
+    Delete the given namespace.
+    """
+    txClient = TxKubernetesClient()
+
+    d = txClient.call(txClient.coreV1.delete_namespace,
+        name=namespace,
+        body=txClient.V1DeleteOptions(),
+    )
+    return d
+
+
+def listDeployments(namespace):
+    """
+    Get a list of all the deployments in a given namespace.
+    """
+    txClient = TxKubernetesClient()
+    deploys = txClient.appsV1.list_namespaced_deployment(namespace)
+    return deploys
+
+
 def createPVC(metadata, spec, namespace):
     """
     Create a Persistent Volume Claim kubernetes resource in a namespace.
     """
-    txk8s = TxKubernetesClient()
-    body = txk8s.V1PersistentVolumeClaim(
+    txClient = TxKubernetesClient()
+    body = txClient.V1PersistentVolumeClaim(
         kind='PersistentVolumeClaim',
         api_version='v1',
         metadata=metadata,
         spec=spec,
     )
 
-    d = txk8s.call(txk8s.coreV1.create_namespaced_persistent_volume_claim,
+    d = txClient.call(txClient.coreV1.create_namespaced_persistent_volume_claim,
         namespace,
         body,
     )
@@ -93,8 +206,8 @@ def createStorageClass(metadata, provisioner):
     """
     Create a Storage Class kubernetes resource.
     """
-    txk8s = TxKubernetesClient()
-    body = txk8s.V1beta1StorageClass(
+    txClient = TxKubernetesClient()
+    body = txClient.V1beta1StorageClass(
         api_version='storage.k8s.io/v1beta1',
         kind='StorageClass',
         metadata=metadata,
@@ -102,8 +215,7 @@ def createStorageClass(metadata, provisioner):
 
     )
 
-    storage = txk8s.StorageV1beta1Api()
-    d = txk8s.call(storage.create_storage_class,
+    d = txClient.call(txClient.StorageV1beta1Api.create_storage_class,
         body=body,
     )
     return d
@@ -113,12 +225,13 @@ def createDeploymentFromFile(filePath, namespace='default'):
     """
     Create a Deployment kubernetes resource from a yaml manifest file.
     """
-    txk8s = TxKubernetesClient()
+    txClient = TxKubernetesClient()
 
     with open(filePath, 'r') as file:
         deployment = yaml.load(file)
 
-        d = txk8s.call(txk8s.extV1Beta1.create_namespaced_deployment,
+        # create a deployment in a namespace
+        d = txClient.call(txClient.extV1Beta1.create_namespaced_deployment,
             body=deployment,
             namespace=namespace,
         )
@@ -129,15 +242,15 @@ def createConfigMap(metadata, data, namespace):
     """
     Create a configmap kubernetes resources in a namespace.
     """
-    txk8s = TxKubernetesClient()
+    txClient = TxKubernetesClient()
 
-    body = txk8s.V1ConfigMap(
+    body = txClient.V1ConfigMap(
         kind='ConfigMap',
         metadata=metadata,
         data=data,
     )
 
-    d = txk8s.call(txk8s.coreV1.create_namespaced_config_map,
+    d = txClient.call(txClient.coreV1.create_namespaced_config_map,
         namespace,
         body
     )
@@ -148,12 +261,12 @@ def createService(filePath, namespace):
     """
     Create a namespaced Service kubernetes resource from a yaml manifest file.
     """
-    txk8s = TxKubernetesClient()
+    txClient = TxKubernetesClient()
     
     with open(filePath, 'r') as file:
         body = yaml.load(file)
 
-        d = txk8s.call(txk8s.coreV1.create_namespaced_service,
+        d = txClient.call(txClient.coreV1.create_namespaced_service,
             namespace,
             body,
         )
@@ -164,12 +277,12 @@ def createServiceAccount(filePath, namespace):
     """
     Create a Service Account kubernetes resource from a yaml manifest file.
     """
-    txk8s = TxKubernetesClient()
+    txClient = TxKubernetesClient()
     
     with open(filePath, 'r') as file:
         body = yaml.load(file)
 
-        d = txk8s.call(txk8s.coreV1.create_namespaced_service_account,
+        d = txClient.call(txClient.coreV1.create_namespaced_service_account,
             namespace,
             body,
         )
@@ -180,12 +293,12 @@ def createClusterRole(filePath):
     """
     Create a Cluster Role kubernetes resource from a yaml manifest file.
     """
-    txk8s = TxKubernetesClient()
+    txClient = TxKubernetesClient()
     
     with open(filePath, 'r') as file:
         body = yaml.load(file)
 
-        d = txk8s.call(txk8s.rbacV1Beta1.create_cluster_role,
+        d = txClient.call(txClient.rbacV1Beta1.create_cluster_role,
             body,
         )
         return d
@@ -195,12 +308,12 @@ def createClusterRoleBind(filePath):
     """
     Create a Cluster Role Binding kubernetes resource from a yaml manifest file.
     """
-    txk8s = TxKubernetesClient()
+    txClient = TxKubernetesClient()
     
     with open(filePath, 'r') as file:
         body = yaml.load(file)
 
-        d = txk8s.call(txk8s.rbacV1Beta1.create_cluster_role_binding,
+        d = txClient.call(txClient.rbacV1Beta1.create_cluster_role_binding,
             body,
         )
         return d
@@ -210,12 +323,12 @@ def createIngress(filePath, namespace):
     """
     Create a Ingress kubernetes resource from a yaml manifest file
     """
-    txk8s = TxKubernetesClient()
+    txClient = TxKubernetesClient()
     
     with open(filePath, 'r') as file:
         body = yaml.load(file)
 
-        d = txk8s.call(txk8s.extV1Beta1.create_namespaced_ingress,
+        d = txClient.call(txClient.extV1Beta1.create_namespaced_ingress,
             namespace,
             body,
         )
@@ -227,11 +340,11 @@ def createEnvVar(envName, configMapName, configMapKey):
     Create a environment variable kubernetes resource that references
     a value in a configmap.
     """
-    txk8s = TxKubernetesClient()
-    return txk8s.V1EnvVar(
+    txClient = TxKubernetesClient()
+    return txClient.V1EnvVar(
         name=envName,
-        value_from=txk8s.V1EnvVarSource(
-            config_map_key_ref=txk8s.V1ConfigMapKeySelector(
+        value_from=txClient.V1EnvVarSource(
+            config_map_key_ref=txClient.V1ConfigMapKeySelector(
                 name=configMapName,
                 key=configMapKey,
             ),
