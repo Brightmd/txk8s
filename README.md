@@ -49,6 +49,10 @@ twine upload dist/*<version>*
 
 ## Change Log
 
+### [0.1.6] - 2018-02-05
+#### Added
+- Deletion methods to __init__
+
 ### [0.1.5] - 2018-02-02
 #### Added
 - Deletion methods for Python K8S API
@@ -86,6 +90,7 @@ twine upload dist/*<version>*
 - Fixed module self-dependency nonsense
 - Testing approach altered significantly
 
+[0.1.6]: https://github.com/Brightmd/txk8s/compare/0.1.4...0.1.6
 [0.1.3]: https://github.com/Brightmd/txk8s/compare/0.1.2...0.1.4
 [0.1.2]: https://github.com/Brightmd/txk8s/compare/0.1.1...0.1.2
 [0.1.1]: https://github.com/Brightmd/txk8s/compare/0.1.0...0.1.1
