@@ -14,7 +14,16 @@ from txk8s.lib import (TxKubernetesClient,
                   createClusterRole,
                   createClusterRoleBind,
                   createIngress,
-                  createEnvVar,)
+                  createEnvVar,
+                  deleteConfigMap,
+                  deleteDeploy,
+                  deleteIngress,
+                  deleteNamespace,
+                  deletePVC,
+                  deleteService,
+                  deleteServiceAcct,
+                  listDeployments,
+)
 
 (__version__,
  TxKubernetesClient,
