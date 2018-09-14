@@ -3,6 +3,8 @@ Tests for osteoblaster's twisted kubernetes module.
 """
 import pytest
 
+from builtins import str
+
 from kubernetes import client
 
 from mock import Mock, mock_open, patch

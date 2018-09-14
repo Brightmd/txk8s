@@ -3,6 +3,8 @@ Kubernetes Client done Twisted style.
 """
 from os import environ
 
+from builtins import object
+
 import yaml
 
 from kubernetes import client, config
