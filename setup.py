@@ -1,8 +1,6 @@
 from setuptools import setup
 from inspect import cleandoc
 
-from past.builtins import execfile
-
 
 _version = {}
 exec(open('txk8s/_version.py').read(), _version)

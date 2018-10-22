@@ -49,6 +49,10 @@ twine upload dist/*<version>*
 
 ## Change Log
 
+### [0.2.1] - 2018-10-22
+#### Fixed
+- setup.py error
+
 ### [0.2.0] - 2018-10-22
 #### Added
 - Python 3 support!
@@ -94,6 +98,7 @@ twine upload dist/*<version>*
 - Fixed module self-dependency nonsense
 - Testing approach altered significantly
 
+[0.2.1]: https://github.com/Brightmd/txk8s/compare/release-0.2.0...release-0.2.1
 [0.2.0]: https://github.com/Brightmd/txk8s/compare/0.1.6...release-0.2.0
 [0.1.6]: https://github.com/Brightmd/txk8s/compare/0.1.4...0.1.6
 [0.1.3]: https://github.com/Brightmd/txk8s/compare/0.1.2...0.1.4
