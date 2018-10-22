@@ -1,13 +1,22 @@
 """
 Tests for osteoblaster's twisted kubernetes module.
 """
+from builtins import str
+
 import pytest
 
 from builtins import str
 
 from kubernetes import client
 
-from mock import Mock, mock_open, patch
+try: # pragma: nocover
+    # python 3
+    from unittest.mock import Mock, mock_open, patch
+    patch_open = lambda f: patch("builtins.open", mock_open(read_data=f))
+except ImportError: # pragma: nocover
+    # python 2
+    from mock import Mock, mock_open, patch
+    patch_open = lambda f: patch("__builtin__.open", mock_open(read_data=f))
 
 from txk8s import lib
 
@@ -286,7 +295,7 @@ def test_createDeploymentFromFile(kubeConfig):
     """
     Do I create a Deployment kubernetes resource from a yaml manifest file?
     """
-    pOpen = patch("__builtin__.open", mock_open(read_data="data"))
+    pOpen = patch_open("data")
     pCall = patch.object(lib.TxKubernetesClient, 'call')
     pApiMethod = patch.object(client,
         'ExtensionsV1beta1Api',
@@ -330,7 +339,7 @@ def test_createService(kubeConfig):
     """
     namespace = 'grn-se-com'
     fileData = 'data'
-    pOpen = patch("__builtin__.open", mock_open(read_data=fileData))
+    pOpen = patch_open(fileData)
     pCall = patch.object(lib.TxKubernetesClient, 'call')
     pApiMethod = patch.object(client,
         'CoreV1Api',
@@ -352,7 +361,7 @@ def test_createServiceAccount(kubeConfig):
     """
     namespace = 'grn-se-com'
     fileData = 'data'
-    pOpen = patch("__builtin__.open", mock_open(read_data=fileData))
+    pOpen = patch_open(fileData)
     pCall = patch.object(lib.TxKubernetesClient, 'call')
     pApiMethod = patch.object(client,
         'CoreV1Api',
@@ -373,7 +382,7 @@ def test_createClusterRole(kubeConfig):
     Do I create a Cluster Role kubernetes resource from a yaml manifest file?
     """
     fileData = 'data'
-    pOpen = patch("__builtin__.open", mock_open(read_data=fileData))
+    pOpen = patch_open(fileData)
     pCall = patch.object(lib.TxKubernetesClient, 'call')
     pApiMethod = patch.object(client,
         'RbacAuthorizationV1beta1Api',
@@ -394,7 +403,7 @@ def test_createClusterRoleBind(kubeConfig):
     Do I create a Cluster Role Binding kubernetes resource from a yaml manifest file?
     """
     fileData = 'data'
-    pOpen = patch("__builtin__.open", mock_open(read_data=fileData))
+    pOpen = patch_open(fileData)
     pCall = patch.object(lib.TxKubernetesClient, 'call')
     pApiMethod = patch.object(client,
         'RbacAuthorizationV1beta1Api',
@@ -416,7 +425,7 @@ def test_createIngress(kubeConfig):
     """
     namespace = 'g-se-com'
     fileData = 'data'
-    pOpen = patch("__builtin__.open", mock_open(read_data=fileData))
+    pOpen = patch_open(fileData)
     pCall = patch.object(lib.TxKubernetesClient, 'call')
     pApiMethod = patch.object(client,
         'ExtensionsV1beta1Api',

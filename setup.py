@@ -5,7 +5,7 @@ from past.builtins import execfile
 
 
 _version = {}
-execfile('txk8s/_version.py', _version)
+exec(open('txk8s/_version.py').read(), _version)
 
 setup(
   name = 'txk8s',
