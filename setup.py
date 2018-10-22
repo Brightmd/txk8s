@@ -1,9 +1,11 @@
 from setuptools import setup
 from inspect import cleandoc
 
+from past.builtins import execfile
+
 
 _version = {}
-execfile('txk8s/_version.py', _version)
+exec(open('txk8s/_version.py').read(), _version)
 
 setup(
   name = 'txk8s',
@@ -17,6 +19,7 @@ setup(
   classifiers = [],
   scripts = [],
   install_requires=cleandoc('''
+    future>=0.16.0
     kubernetes>=3.0.0,<3.1.0
     Twisted>=16.0.0,<18.0.0
     PyYAML>=3.10,<4.0.0
