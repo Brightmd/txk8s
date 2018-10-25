@@ -1,8 +1,6 @@
 """
 Tests for osteoblaster's twisted kubernetes module.
 """
-from builtins import str
-
 import pytest
 
 from builtins import str
