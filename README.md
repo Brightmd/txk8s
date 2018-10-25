@@ -52,6 +52,7 @@ twine upload dist/*<version>*
 ### [0.2.1] - 2018-10-22
 #### Fixed
 - setup.py error
+- test failure from a typo
 
 ### [0.2.0] - 2018-10-22
 #### Added
